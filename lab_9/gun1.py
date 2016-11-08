@@ -53,7 +53,6 @@ class ball():
 
     def hittest(self,ob):
         """ Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте ob.
-
         Args:
             ob: Обьект, с которым проверяется столкновение.
         Returns:
@@ -112,7 +111,7 @@ class gun():
         else:
             canv.itemconfig(self.id,fill = 'black')
 
-class target():
+class target1():
     """ Класс target описывает цель. """
     def __init__(self):
         self.points = 0
@@ -136,9 +135,36 @@ class target():
         canv.coords(self.id,-10,-10,-10,-10)
         self.points += points
         canv.itemconfig(self.id_points, text = self.points)
+class target2():
+    """ Класс target описывает цель. """
+    def __init__(self):
+        self.points = 0
+        self.live = 1
+    # FIXME: don't work!!! How to call this functions when object is created?
+        self.id = canv.create_oval(0,0,0,0)
+        self.id_points = canv.create_text(30,30,text = self.points,font = '28')
+        self.new_target()
+        self.vx = rnd(-2,2)
+        self.vy = rnd(-2,2)
+
+    def new_target(self):
+        """ Инициализация новой цели. """
+        x = self.x = rnd(600,780)
+        y = self.y = rnd(300,550)
+        r = self.r = rnd(2,50)
+        color = self.color = 'red'
+        canv.coords(self.id, x-r,y-r,x+r,y+r)
+        canv.itemconfig(self.id, fill = color)
+
+    def hit(self,points = 1):
+        ''' Попадание шарика в цель '''
+        canv.coords(self.id,-10,-10,-10,-10)
+        self.points += points
+        canv.itemconfig(self.id_points, text = self.points)
 
 
-t1 = target()
+t1 = target1()
+t2 = target2()
 screen1 = canv.create_text(400,300, text = '',font = '28')
 g1 = gun()
 bullet = 0
@@ -147,8 +173,9 @@ balls = []
 
 
 def new_game(event=''):
-    global gun, t1, screen1, balls, bullet
+    global gun, t1, t2, screen1, balls, bullet
     t1.new_target()
+    t2.new_target()
     bullet = 0
     balls = []
     canv.bind('<Button-1>', g1.fire2_start)
@@ -156,15 +183,20 @@ def new_game(event=''):
     canv.bind('<Motion>', g1.targetting)
 
     t1.live = 1
-    while t1.live or balls:
+    t2.live = 1
+    while t1.live  or balls:
         for b in balls:
             b.move()
             if b.hittest(t1) and t1.live:
                 t1.live = 0
                 t1.hit()
+            if b.hittest(t2) and t2.live:
+                t2.live = 0
+                t2.hit()
+            if t1.live==0 and t2.live==0:
                 canv.bind('<Button-1>', '')
                 canv.bind('<ButtonRelease-1>', '')
-                canv.itemconfig(screen1, text = 'Вы уничтожили цель за ' + str(bullet) + ' выстрелов')
+                canv.itemconfig(screen1, text = 'Вы уничтожили цели за ' + str(bullet) + ' выстрелов')
         canv.update()
         time.sleep(0.03)
         g1.targetting()
